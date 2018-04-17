@@ -26,7 +26,7 @@ public class MyGdxGame extends ApplicationAdapter {
     private OrthographicCamera camera;
     private SpriteBatch batch;
     private Rectangle bucket;
-    private Array<Rectangle> raindrops;
+    private Array<Bird> raindrops;
     private long lastDroptime;
 
 
@@ -51,14 +51,14 @@ public class MyGdxGame extends ApplicationAdapter {
         bucket.width = 64;
         bucket.height = 64;
 
-        raindrops = new Array<Rectangle>();
+        raindrops = new Array<Bird>();
         spawnRaindrop();
     }
 
     private void spawnRaindrop() {
-        Rectangle raindrop = new Rectangle();
-        raindrop.x = MathUtils.random(0, 800 - 64);
-        raindrop.y = 480;
+        Bird raindrop = new Bird();
+        raindrop.x = 0;
+        raindrop.y = MathUtils.random(0,480-64);
         raindrop.width = 32;
         raindrop.height = 32;
         raindrops.add(raindrop);
@@ -84,6 +84,7 @@ public class MyGdxGame extends ApplicationAdapter {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
             bucket.x = touchPos.x - 64 / 2;
+            bucket.y = touchPos.y - 64 / 2;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             bucket.x -= 200 * Gdx.graphics.getDeltaTime();
@@ -98,16 +99,22 @@ public class MyGdxGame extends ApplicationAdapter {
             bucket.x = 800 - 64;
         }
         if (TimeUtils.nanoTime() - lastDroptime > 1000000000) spawnRaindrop();
-        Iterator<Rectangle> iter = raindrops.iterator();
+        Iterator<Bird> iter = raindrops.iterator();
         while (iter.hasNext()) {
-            Rectangle raindrop = iter.next();
-            raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-            if (raindrop.y + 64 < 0) {
+            Bird raindrop = iter.next();
+            raindrop.x += 200 * Gdx.graphics.getDeltaTime();
+            if (raindrop.x + 64 > 800) {
                 iter.remove();
             }
-            if (raindrop.overlaps(bucket)) {
-                dropSound.play();
+            if (raindrop.y < 0){
                 iter.remove();
+            }
+            if ((raindrop.overlaps(bucket)) && (raindrop.isalive == 1)) {
+                raindrop.isalive = 0;
+                dropSound.play();
+            }
+            if (raindrop.isalive == 0) {
+                raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
             }
         }
     }
