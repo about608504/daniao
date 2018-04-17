@@ -58,7 +58,7 @@ public class MyGdxGame extends ApplicationAdapter {
     private void spawnRaindrop() {
         Bird raindrop = new Bird();
         raindrop.x = 0;
-        raindrop.y = MathUtils.random(0,480-64);
+        raindrop.y = MathUtils.random(0,480-32);
         raindrop.width = 32;
         raindrop.height = 32;
         raindrops.add(raindrop);
@@ -98,7 +98,7 @@ public class MyGdxGame extends ApplicationAdapter {
         if (bucket.x > 800 - 64) {
             bucket.x = 800 - 64;
         }
-        if (TimeUtils.nanoTime() - lastDroptime > 1000000000) spawnRaindrop();
+        if (TimeUtils.nanoTime() - lastDroptime > 800000000) spawnRaindrop();
         Iterator<Bird> iter = raindrops.iterator();
         while (iter.hasNext()) {
             Bird raindrop = iter.next();
@@ -114,7 +114,7 @@ public class MyGdxGame extends ApplicationAdapter {
                 dropSound.play();
             }
             if (raindrop.isalive == 0) {
-                raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+                raindrop.y -= 800 * Gdx.graphics.getDeltaTime();
             }
         }
     }
