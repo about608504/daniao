@@ -32,11 +32,11 @@ public class MyGdxGame extends ApplicationAdapter {
 
     @Override
     public void create() {
-        dropImage = new Texture(Gdx.files.internal("bird.png"));
-        bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+        dropImage = new Texture(Gdx.files.internal("core/assets/bird.png"));
+        bucketImage = new Texture(Gdx.files.internal("core/assets/bucket.png"));
 
-        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
-        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
+        dropSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/drop.wav"));
+        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("core/assets/rain.mp3"));
 
         rainMusic.setLooping(true);
         rainMusic.play();
