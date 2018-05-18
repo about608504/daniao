@@ -9,49 +9,64 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class MyGdxGame extends ApplicationAdapter {
 
     private Texture dropImage;
-    private Texture bucketImage;
-    private Sound dropSound;
-    private Music rainMusic;
+    private Texture shotImage;
+    private TextureRegion backRegion;
+    private List<Texture> birdImages;
+    private Sound shotSound;
+    private Music backGroundMusic;
     private OrthographicCamera camera;
     private SpriteBatch batch;
     private Rectangle bucket;
-    private Array<Bird> raindrops;
+    private Array<Bird> birds;
     private long lastDroptime;
+    private int bulletSum = 150;
+    private final int reload = 30;
+    private int existBullet = reload;
 
 
     @Override
     public void create() {
-        dropImage = new Texture(Gdx.files.internal("core/assets/bird.png"));
-        bucketImage = new Texture(Gdx.files.internal("core/assets/bucket.png"));
 
-        dropSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/drop.wav"));
-        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("core/assets/rain.mp3"));
+        birdImages = new ArrayList<Texture>(5);
+        for (int i = 0; i < 3; i++)
+            birdImages.add(new Texture(Gdx.files.internal("core/assets/birds/" + String.valueOf(i+1) + ".png")));
+        dropImage = new Texture(Gdx.files.internal("core/assets/droplet.png"));
+        shotImage = new Texture(Gdx.files.internal("core/assets/zhunxin.png"));
 
-        rainMusic.setLooping(true);
-        rainMusic.play();
+        shotSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/shot.wav"));
+        backGroundMusic = Gdx.audio.newMusic(Gdx.files.internal("core/assets/bird.wav"));
+
+        backGroundMusic.setLooping(true);
+        backGroundMusic.play();
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 400);
+        camera.setToOrtho(false, 1280, 380);
+        //不会设置背景图
+        backRegion = new TextureRegion(new Texture(Gdx.files.internal("core/assets/bg.jpg")));
+
         batch = new SpriteBatch();
 
         bucket = new Rectangle();
-        bucket.x = 800 / 2 - 64 / 2;
+        bucket.x = 1280 / 2 - 64 / 2;
         bucket.y = 20;
         bucket.width = 64;
         bucket.height = 64;
 
-        raindrops = new Array<Bird>();
+        birds = new Array<Bird>();
         spawnRaindrop();
     }
 
@@ -61,60 +76,62 @@ public class MyGdxGame extends ApplicationAdapter {
         raindrop.y = MathUtils.random(0,480-32);
         raindrop.width = 32;
         raindrop.height = 32;
-        raindrops.add(raindrop);
+        int rand = (int)(Math.random() * 3);
+        raindrop.setImg(birdImages.get(rand));
+        birds.add(raindrop);
         lastDroptime = TimeUtils.nanoTime();
     }
 
     @Override
     public void render() {
+
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         camera.update();
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.draw(bucketImage, bucket.x, bucket.y);
-        for (Rectangle raindrop : raindrops) {
-            batch.draw(dropImage,raindrop.x,raindrop.y);
+
+        batch.draw(shotImage, bucket.x, bucket.y);
+
+        for (Bird bird : birds) {
+            batch.draw(bird.getImg(), bird.x, bird.y);
         }
+
         batch.end();
 
-        if (Gdx.input.isTouched()) {
-            Vector3 touchPos = new Vector3();
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPos);
-            bucket.x = touchPos.x - 64 / 2;
-            bucket.y = touchPos.y - 64 / 2;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            bucket.x -= 200 * Gdx.graphics.getDeltaTime();
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            bucket.x += 200 * Gdx.graphics.getDeltaTime();
-        }
+        Vector3 touchPos = new Vector3();
+        touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        camera.unproject(touchPos);
+        bucket.x = touchPos.x - 64 / 2;
+        bucket.y = touchPos.y - 64 / 2;
+
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT))
+            shotSound.play();
+
         if (bucket.x < 0) {
             bucket.x = 0;
         }
-        if (bucket.x > 800 - 64) {
-            bucket.x = 800 - 64;
+        if (bucket.x > 1280 - 50) {
+            bucket.x = 1280 - 50;
         }
         if (TimeUtils.nanoTime() - lastDroptime > 800000000) spawnRaindrop();
-        Iterator<Bird> iter = raindrops.iterator();
+        Iterator<Bird> iter = birds.iterator();
         while (iter.hasNext()) {
-            Bird raindrop = iter.next();
-            raindrop.x += 200 * Gdx.graphics.getDeltaTime();
-            if (raindrop.x + 64 > 800) {
+            Bird bird = iter.next();
+            bird.x += 200 * Gdx.graphics.getDeltaTime();
+            if (bird.x + 64 > 1280) {
                 iter.remove();
             }
-            if (raindrop.y < 0){
+            if (bird.y < 0){
                 iter.remove();
             }
-            if ((raindrop.overlaps(bucket)) && (raindrop.isalive == 1)) {
-                raindrop.isalive = 0;
-                dropSound.play();
+            if ((bird.overlaps(bucket)) && (bird.isalive == 1) &&
+                    Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+                bird.isalive = 0;
             }
-            if (raindrop.isalive == 0) {
-                raindrop.y -= 800 * Gdx.graphics.getDeltaTime();
+            if (bird.isalive == 0) {
+                bird.y -= 1280 * Gdx.graphics.getDeltaTime();
             }
         }
     }
@@ -122,9 +139,9 @@ public class MyGdxGame extends ApplicationAdapter {
     @Override
     public void dispose() {
         dropImage.dispose();
-        bucketImage.dispose();
-        dropSound.dispose();
-        rainMusic.dispose();
+        shotImage.dispose();
+        shotSound.dispose();
+        backGroundMusic.dispose();
         batch.dispose();
     }
 }
