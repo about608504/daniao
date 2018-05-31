@@ -42,6 +42,7 @@ public class GameScreen implements Screen {
     private int score = 0;
 
     public GameScreen(MyGdxGame game) {
+
         this.game = game;
         birdImages = new ArrayList<>(5);
         for (int i = 0; i < 3; i++)
