@@ -15,12 +15,12 @@ public class Bird extends Rectangle {
         this.img = img;
     }
 
-    public int isalive;
+    public int isAlive;
 
     /**
      * Constructs a new rectangle with all values set to zero
      */
     public Bird() {
-        this.isalive = 1;
+        this.isAlive = 1;
     }
 }

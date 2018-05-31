@@ -8,7 +8,7 @@ public class
 DesktopLauncher {
     public static void main(String[] arg) {
         LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-        config.title = "Drop";
+        config.title = "Shoot Bird Game";
         config.width = 1280;
         config.height = 800;
         new LwjglApplication(new MyGdxGame(), config);
