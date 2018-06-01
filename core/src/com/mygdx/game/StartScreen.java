@@ -30,7 +30,7 @@ public class StartScreen implements Screen {
     @Override
     public void show() {
         stage = new Stage();
-        texture = new Texture(Gdx.files.internal("core/assets/bg.jpg"));
+        texture = new Texture(Gdx.files.internal("core/assets/bg1.jpg"));
         Texture upTexture = new Texture(Gdx.files.internal("core/assets/buttonup.jpg"));
         Texture downTexture = new Texture(Gdx.files.internal("core/assets/buttondown.jpg"));
         Button.ButtonStyle style = new Button.ButtonStyle();

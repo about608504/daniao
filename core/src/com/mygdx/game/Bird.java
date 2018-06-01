@@ -6,6 +6,15 @@ import com.badlogic.gdx.math.Rectangle;
 public class Bird extends Rectangle {
 
     private Texture img;
+    private int rate;
+
+    public int getRate() {
+        return rate;
+    }
+
+    public void setRate(int rate) {
+        this.rate = rate;
+    }
 
     public Texture getImg() {
         return img;
@@ -17,9 +26,6 @@ public class Bird extends Rectangle {
 
     public int isAlive;
 
-    /**
-     * Constructs a new rectangle with all values set to zero
-     */
     public Bird() {
         this.isAlive = 1;
     }
