@@ -8,7 +8,9 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -48,6 +50,9 @@ public class GameScreen implements Screen {
     private boolean exchanging = false;
     private boolean pressDown = false;
     private boolean oneClick = false;
+    FreeTypeFontGenerator generator;
+    FreeTypeFontGenerator.FreeTypeFontParameter parameter;
+    private BitmapFont font;
     private List<Pair> pairs = Collections.unmodifiableList(
             Arrays.asList(
                     new Pair(32, 32),
@@ -99,6 +104,11 @@ public class GameScreen implements Screen {
         camera.setToOrtho(false, 1280, 700);
 
         batch = new SpriteBatch();
+        generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/font/font.ttf"));
+        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.characters = "1234567890score:/";
+        font = generator.generateFont(parameter);
+        generator.dispose();
 
         shot = new Rectangle();
         shot.x = 60 / 2;
@@ -153,8 +163,11 @@ public class GameScreen implements Screen {
         for (Bird bird : birds) {
             batch.draw(bird.getImg(), bird.x, bird.y);
         }
-
+        font.draw(batch, "score:"+score, 100, 100);
+        font.draw(batch, ""+existBullet+"/30", 100, 80);
         batch.end();
+
+
 
         Vector3 touchPos = new Vector3();
         touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
