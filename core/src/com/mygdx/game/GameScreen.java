@@ -8,7 +8,9 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -43,6 +45,9 @@ public class GameScreen implements Screen {
     private Timer timer = new Timer("clock");
     private boolean exchangeFlag = false;
     private boolean exchanging = false;
+    FreeTypeFontGenerator generator;
+    FreeTypeFontGenerator.FreeTypeFontParameter parameter;
+    private BitmapFont font;
     private List<Pair> pairs = Collections.unmodifiableList(
             Arrays.asList(
                     new Pair(32, 32),
@@ -91,6 +96,19 @@ public class GameScreen implements Screen {
         camera.setToOrtho(false, 1280, 700);
 
         batch = new SpriteBatch();
+
+//        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/fonts/font.ttf"));
+//        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+//        parameter.size = 12;
+//        BitmapFont font12 = generator.generateFont(parameter); // font size 12 pixels
+//        generator.dispose(); // don't forget to dispose to avoid memory leaks!
+
+        generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/font/font.ttf"));
+        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.characters = "1234567890score:";
+        font = generator.generateFont(parameter);
+        generator.dispose();
+
 
         shot = new Rectangle();
         shot.x = 60 / 2;
@@ -148,10 +166,12 @@ public class GameScreen implements Screen {
 
         batch.draw(backgroundImage, 0, 0);
         batch.draw(shotImage, shot.x, shot.y);
-
+        font.draw(batch, "score:" + score, 100, 100);
         for (Bird bird : birds) {
             batch.draw(bird.getImg(), bird.x, bird.y);
         }
+
+
 
         batch.end();
 
