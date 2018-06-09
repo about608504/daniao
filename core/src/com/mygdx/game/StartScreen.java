@@ -4,8 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -22,8 +24,25 @@ public class StartScreen implements Screen {
     private Texture texture;
     private SpriteBatch batch;
     private MyGdxGame game;
+    private int score = -1;
+    private FreeTypeFontGenerator generator;
+    private FreeTypeFontGenerator.FreeTypeFontParameter parameter;
+    private BitmapFont font;
+
+    public StartScreen(MyGdxGame game, int score) {
+        generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/font/font.ttf"));
+        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.characters = "1234567890TotalScore:/欢迎进入游戏";
+        font = generator.generateFont(parameter);
+        this.game = game;
+        this.score = score;
+    }
 
     public StartScreen(MyGdxGame game) {
+        generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/font/font.ttf"));
+        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.characters = "欢迎进入游戏";
+        font = generator.generateFont(parameter);
         this.game = game;
     }
 
@@ -58,6 +77,7 @@ public class StartScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
         batch.draw(texture, 0, 0);
+        font.draw(batch, score == -1 ? "欢迎进入游戏" : "TotalScore:" + score, 585, 300);
         batch.end();
         stage.act();
         stage.draw();
