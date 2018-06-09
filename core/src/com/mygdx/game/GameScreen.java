@@ -15,9 +15,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,16 +44,47 @@ public class GameScreen implements Screen {
     private int existBullet = reload;
     private int score = 0;
     private long exchangeTime = 2000;
-    private ExecutorService executorService = Executors.newCachedThreadPool();
-    private Future<Boolean> future = executorService.submit(new TimeCounter(exchangeTime));
+    //    private ExecutorService executorService = Executors.newCachedThreadPool();
+//    private Future<Boolean> future = executorService.submit(new TimeCounter(exchangeTime));
+    private List<Pair> pairs = Collections.unmodifiableList(
+            Arrays.asList(
+                    new Pair(32, 32),
+                    new Pair(100, 111),
+                    new Pair(100, 100)
+            ));
+    private List<Integer> rates = Collections.unmodifiableList(
+            Arrays.asList(
+                    500,
+                    350,
+                    300
+            )
+    );
+
+    private List<Integer> scores = Collections.unmodifiableList(
+            Arrays.asList(
+                    50,
+                    30,
+                    10
+            )
+    );
+
+    private class Pair {
+        Pair(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        int x;
+        int y;
+    }
 
     public GameScreen(MyGdxGame game) {
 
         this.game = game;
         backgroundImage = new Texture(Gdx.files.internal("core/assets/bg.jpg"));
-        birdImages = new ArrayList<>(5);
+        birdImages = new ArrayList<>(3);
         for (int i = 0; i < 3; i++)
-            birdImages.add(new Texture(Gdx.files.internal("core/assets/birds/" + String.valueOf(i+1) + ".png")));
+            birdImages.add(new Texture(Gdx.files.internal("core/assets/birds/" + String.valueOf(i + 1) + ".png")));
         shotImage = new Texture(Gdx.files.internal("core/assets/zhunxin.png"));
 
         exchangeSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/reload.mp3"));
@@ -67,23 +96,41 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
 
         shot = new Rectangle();
-        shot.x = 60/2;
-        shot.y = 60/2;
-        shot.width = 60;
-        shot.height = 60;
+        shot.x = 60 / 2;
+        shot.y = 60 / 2;
+        shot.width = 30;
+        shot.height = 30;
 
         birds = new Array<>();
         spawnRaindrop();
     }
 
+    private void spawnRaindrop(Bird bird, int index){
+        bird.setScore(scores.get(index));
+        bird.setRangeX(pairs.get(index).x);
+        bird.setRangeY(pairs.get(index).y);
+        bird.x = 0;
+        bird.y = MathUtils.random(0, 800 - pairs.get(index).y);
+        bird.setImg(birdImages.get(index));
+        bird.width = bird.getRangeX();
+        bird.height = bird.getRangeY();
+        bird.setRate(rates.get(index));
+        birds.add(bird);
+        lastDroptime = TimeUtils.nanoTime();
+    }
+
     private void spawnRaindrop() {
         Bird bird = new Bird();
-        bird.x = 0;
-        bird.y = MathUtils.random(0,800-32);
-        bird.width = 32;
-        bird.height = 32;
-        int rand = (int)(Math.random() * 3);
+        int rand = (int) (Math.random() * 3);
+        bird.setScore(scores.get(rand));
         bird.setImg(birdImages.get(rand));
+        bird.setRangeX(pairs.get(rand).x);
+        bird.setRangeY(pairs.get(rand).y);
+        bird.x = 0;
+        bird.y = MathUtils.random(0, 800 - bird.getRangeY());
+        bird.width = bird.getRangeX();
+        bird.height = bird.getRangeY();
+        bird.setRate(rand);
         birds.add(bird);
         lastDroptime = TimeUtils.nanoTime();
     }
@@ -117,7 +164,7 @@ public class GameScreen implements Screen {
         shot.x = touchPos.x - 64 / 2;
         shot.y = touchPos.y - 64 / 2;
 
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             if (existBullet > 0)
                 shotSound.play();
             else {
@@ -126,7 +173,6 @@ public class GameScreen implements Screen {
             shot.x += Math.random() * 50;
             shot.y += Math.random() * 50;
             --existBullet;
-            isExchange();
         }
 
         if (shot.x < 0) {
@@ -135,15 +181,15 @@ public class GameScreen implements Screen {
         if (shot.x > 1280 - 50) {
             shot.x = 1280 - 50;
         }
-        if (TimeUtils.nanoTime() - lastDroptime > 800000000) spawnRaindrop();
+        if (TimeUtils.nanoTime() - lastDroptime > 800000000) spawnRaindrop(new Bird(), (int) (Math.random() * 3));
         Iterator<Bird> iterator = birds.iterator();
         while (iterator.hasNext()) {
             Bird bird = iterator.next();
-            bird.x += 200 * Gdx.graphics.getDeltaTime();
+            bird.x += bird.getRate() * Gdx.graphics.getDeltaTime();
             if (bird.x + 64 > 1280) {
                 iterator.remove();
             }
-            if (bird.y < 0){
+            if (bird.y < 0) {
                 iterator.remove();
             }
             if ((bird.overlaps(shot)) && (bird.isAlive == 1) &&
@@ -152,8 +198,7 @@ public class GameScreen implements Screen {
                 birdSound.play();
                 shot.x += Math.random() * 50;
                 shot.y += Math.random() * 50;
-                --existBullet;
-                isExchange();
+                score += bird.getScore();
             }
             if (bird.isAlive == 0) {
                 bird.y -= 1280 * Gdx.graphics.getDeltaTime();
@@ -161,20 +206,20 @@ public class GameScreen implements Screen {
         }
     }
 
-    //换弹逻辑
-    private void isExchange() {
-        if (existBullet <= 0){
-            try {
-                if (future.get()){
-                    System.out.println("done!");
-                    existBullet = reload;
-                    exchangeSound.play(15);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    //换弹逻辑
+//    private void isExchange() {
+//        if (existBullet <= 0){
+//            try {
+//                if (future.get()){
+//                    System.out.println("done!");
+//                    existBullet = reload;
+//                    exchangeSound.play(15);
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     @Override
     public void resize(int width, int height) {

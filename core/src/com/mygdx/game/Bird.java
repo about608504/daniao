@@ -5,6 +5,34 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class Bird extends Rectangle {
 
+    private int rangeX;
+    private int rangeY;
+    private int score;
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public int getRangeX() {
+        return rangeX;
+    }
+
+    public void setRangeX(int rangeX) {
+        this.rangeX = rangeX;
+    }
+
+    public int getRangeY() {
+        return rangeY;
+    }
+
+    public void setRangeY(int rangeY) {
+        this.rangeY = rangeY;
+    }
+
     private Texture img;
     private int rate;
 
