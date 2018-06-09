@@ -8,14 +8,17 @@ buildscript {
         jcenter()
     }
     dependencies {
-        
 
     }
+}
+plugins {
+    id "us.kirchmeier.capsule" version "1.0.2"
 }
 
 allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
+    //apply plugin: 'executable-jar'
 
     version = '1.0'
     ext {
@@ -64,3 +67,11 @@ project(":core") {
 tasks.eclipse.doLast {
     delete ".project"
 }
+
+
+
+task simpleCapsule(type: FatCapsule){
+    applicationClass 'DesktopLauncher'
+
+}
+
