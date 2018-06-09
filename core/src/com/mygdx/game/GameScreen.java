@@ -16,10 +16,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * @Author: Liu
@@ -43,14 +39,16 @@ public class GameScreen implements Screen {
     private final int reload = 30;
     private int existBullet = reload;
     private int score = 0;
-    private long exchangeTime = 2000;
+    private long exchangeTime = 5000;
+    private Timer timer = new Timer("clock");
+    private boolean exchangeFlag = false;
     //    private ExecutorService executorService = Executors.newCachedThreadPool();
 //    private Future<Boolean> future = executorService.submit(new TimeCounter(exchangeTime));
     private List<Pair> pairs = Collections.unmodifiableList(
             Arrays.asList(
                     new Pair(32, 32),
-                    new Pair(100, 111),
-                    new Pair(100, 100)
+                    new Pair(60, 60),
+                    new Pair(60, 60)
             ));
     private List<Integer> rates = Collections.unmodifiableList(
             Arrays.asList(
@@ -102,10 +100,10 @@ public class GameScreen implements Screen {
         shot.height = 30;
 
         birds = new Array<>();
-        spawnRaindrop();
+        pointedBird();
     }
 
-    private void spawnRaindrop(Bird bird, int index){
+    private void pointedBird(Bird bird, int index){
         bird.setScore(scores.get(index));
         bird.setRangeX(pairs.get(index).x);
         bird.setRangeY(pairs.get(index).y);
@@ -119,7 +117,7 @@ public class GameScreen implements Screen {
         lastDroptime = TimeUtils.nanoTime();
     }
 
-    private void spawnRaindrop() {
+    private void pointedBird() {
         Bird bird = new Bird();
         int rand = (int) (Math.random() * 3);
         bird.setScore(scores.get(rand));
@@ -165,14 +163,20 @@ public class GameScreen implements Screen {
         shot.y = touchPos.y - 64 / 2;
 
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-            if (existBullet > 0)
+            if (existBullet > 0){
                 shotSound.play();
-            else {
-
+                shot.x += Math.random() * 50;
+                shot.y += Math.random() * 50;
+                --existBullet;
+            } else {
+                isExchange();
+                if (exchangeFlag){
+                    System.out.println("该换弹了");
+                    timer.purge();
+                    exchangeFlag = false;
+                    existBullet = 30;
+                }
             }
-            shot.x += Math.random() * 50;
-            shot.y += Math.random() * 50;
-            --existBullet;
         }
 
         if (shot.x < 0) {
@@ -181,10 +185,11 @@ public class GameScreen implements Screen {
         if (shot.x > 1280 - 50) {
             shot.x = 1280 - 50;
         }
-        if (TimeUtils.nanoTime() - lastDroptime > 800000000) spawnRaindrop(new Bird(), (int) (Math.random() * 3));
+        if (TimeUtils.nanoTime() - lastDroptime > 800000000) pointedBird(new Bird(), (int) (Math.random() * 3));
         Iterator<Bird> iterator = birds.iterator();
         while (iterator.hasNext()) {
             Bird bird = iterator.next();
+            //设定不同的鸟有不同的速率
             bird.x += bird.getRate() * Gdx.graphics.getDeltaTime();
             if (bird.x + 64 > 1280) {
                 iterator.remove();
@@ -193,7 +198,8 @@ public class GameScreen implements Screen {
                 iterator.remove();
             }
             if ((bird.overlaps(shot)) && (bird.isAlive == 1) &&
-                    Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+                    Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
+                    existBullet > 0) {
                 bird.isAlive = 0;
                 birdSound.play();
                 shot.x += Math.random() * 50;
@@ -206,20 +212,24 @@ public class GameScreen implements Screen {
         }
     }
 
-//    //换弹逻辑
-//    private void isExchange() {
-//        if (existBullet <= 0){
-//            try {
-//                if (future.get()){
-//                    System.out.println("done!");
-//                    existBullet = reload;
-//                    exchangeSound.play(15);
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
+    //换弹逻辑
+    private void isExchange() {
+        if (existBullet <= 0){
+            try {
+                //利用Timer安排一个延迟exchangeTime之后再执行的任务
+                //这里是延迟一段时间后将换弹完成flag置为true
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        System.out.println("已换弹");
+                        exchangeFlag = true;
+                    }
+                }, exchangeTime);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public void resize(int width, int height) {
