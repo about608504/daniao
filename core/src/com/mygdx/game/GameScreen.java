@@ -43,8 +43,6 @@ public class GameScreen implements Screen {
     private Timer timer = new Timer("clock");
     private boolean exchangeFlag = false;
     private boolean exchanging = false;
-    //    private ExecutorService executorService = Executors.newCachedThreadPool();
-//    private Future<Boolean> future = executorService.submit(new TimeCounter(exchangeTime));
     private List<Pair> pairs = Collections.unmodifiableList(
             Arrays.asList(
                     new Pair(32, 32),
@@ -101,7 +99,7 @@ public class GameScreen implements Screen {
         shot.height = 30;
 
         birds = new Array<>();
-        pointedBird();
+        //pointedBird();
     }
 
     private void pointedBird(Bird bird, int index){
@@ -170,12 +168,13 @@ public class GameScreen implements Screen {
                 shot.y += Math.random() * 50;
                 --existBullet;
             } else {
+                exchangeSound.play();
+                System.out.println("该换弹了");
                 if (!exchanging){
                     isExchange();
                     exchanging = true;
                 }
                 if (exchangeFlag){
-                    System.out.println("该换弹了");
                     timer.purge();
                     exchangeFlag = false;
                     exchanging = false;
@@ -196,7 +195,7 @@ public class GameScreen implements Screen {
             Bird bird = iterator.next();
             //设定不同的鸟有不同的速率
             bird.x += bird.getRate() * Gdx.graphics.getDeltaTime();
-            if (bird.x + 64 > 1280) {
+            if (bird.x + 50 > 1280) {
                 iterator.remove();
             }
             if (bird.y < 0) {
@@ -212,7 +211,8 @@ public class GameScreen implements Screen {
                 score += bird.getScore();
             }
             if (bird.isAlive == 0) {
-                bird.y -= 1280 * Gdx.graphics.getDeltaTime();
+                bird.x += (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                bird.y -= 400 * Gdx.graphics.getDeltaTime();
             }
         }
     }
