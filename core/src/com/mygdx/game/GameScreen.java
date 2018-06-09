@@ -42,6 +42,7 @@ public class GameScreen implements Screen {
     private long exchangeTime = 5000;
     private Timer timer = new Timer("clock");
     private boolean exchangeFlag = false;
+    private boolean exchanging = false;
     //    private ExecutorService executorService = Executors.newCachedThreadPool();
 //    private Future<Boolean> future = executorService.submit(new TimeCounter(exchangeTime));
     private List<Pair> pairs = Collections.unmodifiableList(
@@ -169,11 +170,15 @@ public class GameScreen implements Screen {
                 shot.y += Math.random() * 50;
                 --existBullet;
             } else {
-                isExchange();
+                if (!exchanging){
+                    isExchange();
+                    exchanging = true;
+                }
                 if (exchangeFlag){
                     System.out.println("该换弹了");
                     timer.purge();
                     exchangeFlag = false;
+                    exchanging = false;
                     existBullet = 30;
                 }
             }
@@ -218,6 +223,7 @@ public class GameScreen implements Screen {
             try {
                 //利用Timer安排一个延迟exchangeTime之后再执行的任务
                 //这里是延迟一段时间后将换弹完成flag置为true
+                timer.purge();
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
