@@ -8,6 +8,15 @@ public class Bird extends Rectangle {
     private int rangeX;
     private int rangeY;
     private int score;
+    private int gift;
+
+    public int getGift() {
+        return gift;
+    }
+
+    public void setGift(int gift) {
+        this.gift = gift;
+    }
 
     public int getScore() {
         return score;
