@@ -8,9 +8,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -28,8 +26,11 @@ public class GameScreen implements Screen {
     private MyGdxGame game;
     private Texture shotImage;
     private Texture backgroundImage;
+    private Texture giftImage;
+    private Texture bulletImage;
     private List<Texture> birdImages;
     private Sound shotSound;
+    private Sound amazingSound;
     private Music birdSound;
     private Sound exchangeSound;
     private OrthographicCamera camera;
@@ -45,9 +46,8 @@ public class GameScreen implements Screen {
     private Timer timer = new Timer("clock");
     private boolean exchangeFlag = false;
     private boolean exchanging = false;
-    FreeTypeFontGenerator generator;
-    FreeTypeFontGenerator.FreeTypeFontParameter parameter;
-    private BitmapFont font;
+    private boolean pressDown = false;
+    private boolean oneClick = false;
     private List<Pair> pairs = Collections.unmodifiableList(
             Arrays.asList(
                     new Pair(32, 32),
@@ -88,7 +88,10 @@ public class GameScreen implements Screen {
         for (int i = 0; i < 3; i++)
             birdImages.add(new Texture(Gdx.files.internal("core/assets/birds/" + String.valueOf(i + 1) + ".png")));
         shotImage = new Texture(Gdx.files.internal("core/assets/zhunxin.png"));
+        giftImage = new Texture(Gdx.files.internal("core/assets/gift.png"));
+        bulletImage = new Texture(Gdx.files.internal("core/assets/bullet.png"));
 
+        amazingSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/amazing.wav"));
         exchangeSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/reload.mp3"));
         shotSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/shot.wav"));
         birdSound = Gdx.audio.newMusic(Gdx.files.internal("core/assets/bird.wav"));
@@ -97,56 +100,36 @@ public class GameScreen implements Screen {
 
         batch = new SpriteBatch();
 
-//        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/fonts/font.ttf"));
-//        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-//        parameter.size = 12;
-//        BitmapFont font12 = generator.generateFont(parameter); // font size 12 pixels
-//        generator.dispose(); // don't forget to dispose to avoid memory leaks!
-
-        generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/font/font.ttf"));
-        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.characters = "1234567890score:";
-        font = generator.generateFont(parameter);
-        generator.dispose();
-
-
         shot = new Rectangle();
         shot.x = 60 / 2;
         shot.y = 60 / 2;
         shot.width = 30;
         shot.height = 30;
+        Gdx.input.setInputProcessor(new MyInputProcessor());
 
         birds = new Array<>();
-        //pointedBird();
     }
+
+
 
     private void pointedBird(Bird bird, int index){
         bird.setScore(scores.get(index));
         bird.setRangeX(pairs.get(index).x);
         bird.setRangeY(pairs.get(index).y);
         bird.x = 0;
-        bird.y = MathUtils.random(0, 800 - pairs.get(index).y);
+        bird.y = MathUtils.random(0, 1280 - pairs.get(index).y);
         bird.setImg(birdImages.get(index));
         bird.width = bird.getRangeX();
         bird.height = bird.getRangeY();
         bird.setRate(rates.get(index));
-        birds.add(bird);
-        lastDroptime = TimeUtils.nanoTime();
-    }
-
-    private void pointedBird() {
-        Bird bird = new Bird();
-        int rand = (int) (Math.random() * 3);
-        bird.setScore(scores.get(rand));
-        bird.setImg(birdImages.get(rand));
-        bird.setRangeX(pairs.get(rand).x);
-        bird.setRangeY(pairs.get(rand).y);
-        bird.x = 0;
-        bird.y = MathUtils.random(0, 800 - bird.getRangeY());
-        bird.width = bird.getRangeX();
-        bird.height = bird.getRangeY();
-        bird.setRate(rand);
-        birds.add(bird);
+        double gift = Math.random();
+        if (gift >= 0 && gift <= 0.05)
+            bird.setGift(1);//增加子弹
+        else if (gift > 0.05 && gift <= 0.15)
+            bird.setGift(2);
+        else
+            bird.setGift(0);
+        birds.add(bird);//分数宝箱
         lastDroptime = TimeUtils.nanoTime();
     }
 
@@ -166,12 +149,10 @@ public class GameScreen implements Screen {
 
         batch.draw(backgroundImage, 0, 0);
         batch.draw(shotImage, shot.x, shot.y);
-        font.draw(batch, "score:" + score, 100, 100);
+
         for (Bird bird : birds) {
             batch.draw(bird.getImg(), bird.x, bird.y);
         }
-
-
 
         batch.end();
 
@@ -181,12 +162,22 @@ public class GameScreen implements Screen {
         shot.x = touchPos.x - 64 / 2;
         shot.y = touchPos.y - 64 / 2;
 
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+        if (Gdx.input.isTouched()){
+            pressDown = true;
+        }
+        if (!Gdx.input.isTouched() && pressDown){
+            pressDown = false;
+            oneClick = true;
+        }
+
+        if (oneClick) {
+            oneClick = false;
             if (existBullet > 0){
                 shotSound.play();
                 shot.x += Math.random() * 50;
                 shot.y += Math.random() * 50;
                 --existBullet;
+                --bulletSum;
             } else {
                 exchangeSound.play();
                 System.out.println("该换弹了");
@@ -198,7 +189,7 @@ public class GameScreen implements Screen {
                     timer.purge();
                     exchangeFlag = false;
                     exchanging = false;
-                    existBullet = 30;
+                    existBullet = reload;
                 }
             }
         }
@@ -216,10 +207,18 @@ public class GameScreen implements Screen {
             //设定不同的鸟有不同的速率
             bird.x += bird.getRate() * Gdx.graphics.getDeltaTime();
             if (bird.x + 50 > 1280) {
-                iterator.remove();
+                try {
+                    iterator.remove();
+                }catch (ArrayIndexOutOfBoundsException e){
+                    continue;
+                }
             }
             if (bird.y < 0) {
-                iterator.remove();
+                try {
+                    iterator.remove();
+                }catch (ArrayIndexOutOfBoundsException e){
+                    continue;
+                }
             }
             if ((bird.overlaps(shot)) && (bird.isAlive == 1) &&
                     Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
@@ -229,6 +228,51 @@ public class GameScreen implements Screen {
                 shot.x += Math.random() * 50;
                 shot.y += Math.random() * 50;
                 score += bird.getScore();
+            }
+            //宝箱逻辑
+            if (bird.getGift() == 1 && bird.isAlive == 0){
+                bird.isAlive = 1;
+                bird.setImg(bulletImage);
+                bird.width = 200;
+                bird.height = 90;
+                if (Math.random() >= 0.5)
+                    bird.x += (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                else
+                    bird.x -= (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                bird.y -= 400 * Gdx.graphics.getDeltaTime();
+                if ((bird.overlaps(shot)) && (bird.isAlive == 1) &&
+                        Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
+                        existBullet > 0){
+                    amazingSound.play();
+                    bird.isAlive = 0;
+                    bird.setGift(0);
+                    shot.x += Math.random() * 50;
+                    shot.y += Math.random() * 50;
+                    bulletSum += 10;
+                }
+            }else if (bird.getGift() == 2 && bird.isAlive == 0){
+                bird.isAlive = 1;
+                bird.setImg(giftImage);
+                bird.width = 100;
+                bird.height = 75;
+                if (Math.random() >= 0.5)
+                    bird.x += (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                else
+                    bird.x -= (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                if (Math.random() >= 0.5)
+                    bird.y -= 400 * Gdx.graphics.getDeltaTime();
+                else
+                    bird.y += 400 * Gdx.graphics.getDeltaTime();
+                if ((bird.overlaps(shot)) && (bird.isAlive == 1) &&
+                        Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
+                        existBullet > 0){
+                    amazingSound.play();
+                    bird.isAlive = 0;
+                    bird.setGift(0);
+                    shot.x += Math.random() * 50;
+                    shot.y += Math.random() * 50;
+                    score += 100;
+                }
             }
             if (bird.isAlive == 0) {
                 bird.x += (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
@@ -243,7 +287,6 @@ public class GameScreen implements Screen {
             try {
                 //利用Timer安排一个延迟exchangeTime之后再执行的任务
                 //这里是延迟一段时间后将换弹完成flag置为true
-                timer.purge();
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
