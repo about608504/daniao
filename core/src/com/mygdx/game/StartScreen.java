@@ -18,6 +18,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
  * @Author: Liu
  * @Date: 2018/5/31 21:52
  */
+
+//启动页面
 public class StartScreen implements Screen {
 
     private Stage stage;
@@ -53,6 +55,7 @@ public class StartScreen implements Screen {
         Texture upTexture = new Texture(Gdx.files.internal("core/assets/buttonup.jpg"));
         Texture downTexture = new Texture(Gdx.files.internal("core/assets/buttondown.jpg"));
         Button.ButtonStyle style = new Button.ButtonStyle();
+        //按钮点击样式
         style.up = new TextureRegionDrawable(new TextureRegion(upTexture));
         style.down = new TextureRegionDrawable(new TextureRegion(downTexture));
         Button button = new Button(style);
@@ -70,6 +73,7 @@ public class StartScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
     }
 
+    //轮询绘制图像
     @Override
     public void render(float delta) {
         batch = new SpriteBatch();

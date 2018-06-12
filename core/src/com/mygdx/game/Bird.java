@@ -3,6 +3,9 @@ package com.mygdx.game;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 
+/*
+鸟对象
+ */
 public class Bird extends Rectangle {
 
     private int rangeX;

@@ -52,7 +52,7 @@ public class MyInputProcessor implements InputProcessor {
      */
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (button == 0)
+        if (button == Input.Buttons.LEFT)
             System.out.println("点击");
         return button == 0;
     }
@@ -68,7 +68,7 @@ public class MyInputProcessor implements InputProcessor {
      */
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (button == 0){
+        if (button == Input.Buttons.LEFT){
             System.out.println("抬起");
             return true;
         }
