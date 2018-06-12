@@ -51,6 +51,7 @@ public class GameScreen implements Screen {
     private boolean pressDown = false;
     private boolean oneClick = false;
     private int birdSum = 50;
+    private double hard = 1.0;
     private FreeTypeFontGenerator generator;
     private BitmapFont font;
     private List<Pair> pairs = Collections.unmodifiableList(
@@ -150,6 +151,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        if (score > 5000)
+            hard = 1.5;
+        else
+            hard = 1.0;
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         camera.update();
@@ -226,7 +231,7 @@ public class GameScreen implements Screen {
             try {
                 Bird bird = iterator.next();
                 //设定不同的鸟有不同的速率
-                bird.x += bird.getRate() * Gdx.graphics.getDeltaTime();
+                bird.x += bird.getRate() * hard * Gdx.graphics.getDeltaTime();
                 if (bird.x + 50 > 1280) {
                     try {
                         iterator.remove();
@@ -258,9 +263,9 @@ public class GameScreen implements Screen {
                     bird.width = 200;
                     bird.height = 90;
                     if (Math.random() >= 0.5)
-                        bird.x += (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                        bird.x += (bird.getRate() - 200) * hard * Gdx.graphics.getDeltaTime();
                     else
-                        bird.x -= (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                        bird.x -= (bird.getRate() - 200) * hard * Gdx.graphics.getDeltaTime();
                     bird.y -= 400 * Gdx.graphics.getDeltaTime();
                     if ((bird.overlaps(shot)) && (bird.isAlive == 1) &&
                             Gdx.input.isButtonPressed(Input.Buttons.LEFT) &&
@@ -278,9 +283,9 @@ public class GameScreen implements Screen {
                     bird.width = 100;
                     bird.height = 75;
                     if (Math.random() >= 0.5)
-                        bird.x += (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                        bird.x += (bird.getRate() - 200) * hard * Gdx.graphics.getDeltaTime();
                     else
-                        bird.x -= (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                        bird.x -= (bird.getRate() - 200) * hard * Gdx.graphics.getDeltaTime();
                     if (Math.random() >= 0.5)
                         bird.y -= 400 * Gdx.graphics.getDeltaTime();
                     else
@@ -298,7 +303,7 @@ public class GameScreen implements Screen {
                     }
                 }
                 if (bird.isAlive == 0) {
-                    bird.x += (bird.getRate() - 200) * Gdx.graphics.getDeltaTime();
+                    bird.x += (bird.getRate() - 200) * hard * Gdx.graphics.getDeltaTime();
                     bird.y -= 400 * Gdx.graphics.getDeltaTime();
                 }
             }catch (Exception ignored){
