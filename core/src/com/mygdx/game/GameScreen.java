@@ -20,75 +20,139 @@ import com.badlogic.gdx.utils.TimeUtils;
 import java.util.*;
 
 /**
- * @Author: Liu
- * @Date: 2018/5/31 22:56
+ * @author : Liu BCY WY STX
+ * @date : 2018/5/31 22:56
  */
 //游戏界面
 public class GameScreen implements Screen {
-    //游戏对象
+    /**
+     * 游戏对象
+     */
     private MyGdxGame game;
-    //准心图像
+    /**
+     * 准心图像
+     */
     private Texture shotImage;
-    //背景图片
+    /**
+     * 背景图片贴图
+     */
     private Texture backgroundImage;
-    //宝箱图片
+    /**
+     * 宝箱图片贴图
+     */
     private Texture giftImage;
-    //子弹图片
+    /**
+     * 子弹图片贴图
+     */
     private Texture bulletImage;
-    //3种鸟的图片
+    /**
+     * 3种鸟的图片贴图
+     */
     private List<Texture> birdImages;
-    //射击枪声
+    /**
+     * 射击枪声
+     */
     private Sound shotSound;
-    //惊喜声音
+    /**
+     * 惊喜声音
+     */
     private Sound amazingSound;
-    //鸟被射击之后的惨叫声
+    /**
+     * 鸟被射击之后的惨叫声
+     */
     private Music birdSound;
-    //换弹声
+    /**
+     * 换弹声
+     */
     private Sound exchangeSound;
+    /**
+     * 游戏镜头，在本游戏中镜头不会移动，固定
+     */
     private OrthographicCamera camera;
-    //游戏批处理逻辑
+    /**
+     * 游戏批处理对象
+     */
     private SpriteBatch batch;
-    //射击准心范围（正方形）
+    /**
+     * 射击准心范围（矩形）
+     */
     private Rectangle shot;
-    //储存鸟对象
+    /**
+     * 储存鸟对象
+     */
     private Array<Bird> birds;
-    //出现一次鸟的时间点
+    /**
+     * 出现一次鸟的时间点
+     */
     private long lastBirdTime;
-    //子弹总数
+    /**
+     * 剩余子弹总数
+     */
     private int bulletSum = 100;
-    //弹夹容量
+    /**
+     * 弹夹容量
+     */
     private final int reload = 30;
-    //初始化子弹数量为30
+    /**
+     * 初始化子弹数量为30
+     */
     private int existBullet = reload;
-    //分数
+    /**
+     * 分数
+     */
     private int score = 0;
-    //换弹时间 1.5秒
+    /**
+     * 换弹时间 1.5秒
+     */
     private long exchangeTime = 1500;
-    //计时任务执行者
+    /**
+     * 计时任务执行者
+     */
     private Timer timer = new Timer("clock");
-    //换弹标志
+    /**
+     * 换弹标志
+     */
     private boolean exchangeFlag = false;
-    //正在换弹的标志
+    /**
+     * 正在换弹的标志
+     */
     private boolean exchanging = false;
-    //按下鼠标左键的标志
+    /**
+     * 按下鼠标左键的标志
+     */
     private boolean pressDown = false;
-    //点击动作完成一次的的标志
+    /**
+     * 点击动作完成一次的的标志
+     */
     private boolean oneClick = false;
-    //初始化鸟的总量
+    /**
+     * 初始化鸟的总量
+     */
     private int birdSum = 50;
-    //鸟速度调节参数，当分数大于5000时，值为1.5
+    /**
+     * 鸟速度调节参数，当分数大于5000时，值为1.5
+     */
     private double hard = 1.0;
-    //文字图片生成器
+    /**
+     * 文字图片贴图生成器
+     */
     private FreeTypeFontGenerator generator;
+    /**
+     * 文字贴图对象
+     */
     private BitmapFont font;
-    //每种鸟的命中范围
+    /**
+     * 每种鸟的命中范围
+     */
     private List<Pair> pairs = Collections.unmodifiableList(
             Arrays.asList(
                     new Pair(32, 32),
                     new Pair(60, 60),
                     new Pair(60, 60)
             ));
-    //每种鸟的速度
+    /**
+     * 每种鸟的速度
+     */
     private List<Integer> rates = Collections.unmodifiableList(
             Arrays.asList(
                     500,
@@ -97,7 +161,9 @@ public class GameScreen implements Screen {
             )
     );
 
-    //每种鸟的分数
+    /**
+     * 每种鸟的分数
+     */
     private List<Integer> scores = Collections.unmodifiableList(
             Arrays.asList(
                     100,
@@ -106,6 +172,10 @@ public class GameScreen implements Screen {
             )
     );
 
+    /**
+     * 私有内部类
+     * 存储一对int类型的数据
+     */
     private class Pair {
         Pair(int x, int y) {
             this.x = x;
@@ -116,12 +186,19 @@ public class GameScreen implements Screen {
         int y;
     }
 
+    /**
+     * 初始化各种参数
+     * @param game 游戏对象
+     */
     public GameScreen(MyGdxGame game) {
 
         /*
         初始化各种参数
          */
         this.game = game;
+        /**
+         * 初始化各种贴图对象，声音对象
+         */
         backgroundImage = new Texture(Gdx.files.internal("core/assets/bg.jpg"));
         birdImages = new ArrayList<>(3);
         for (int i = 0; i < 3; i++)
@@ -137,7 +214,7 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1280, 700);
 
-        //游戏逻辑处理批
+        //游戏逻辑处理批对象
         batch = new SpriteBatch();
         generator = new FreeTypeFontGenerator(Gdx.files.internal("core/assets/font/font.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -156,8 +233,13 @@ public class GameScreen implements Screen {
         birds = new Array<>();
     }
 
-    /*
-    根据鸟的种类初始化鸟的对象
+    /**
+     * 根据鸟的种类初始化鸟的对象
+     * 共有3种鸟
+     * 0-》100分
+     * 1-》30分
+     * 2-》10分
+     * 不同的鸟运动的速率也不同
      */
 
     private void pointedBird(Bird bird, int index){
@@ -170,6 +252,7 @@ public class GameScreen implements Screen {
         bird.width = bird.getRangeX();
         bird.height = bird.getRangeY();
         bird.setRate(rates.get(index));
+        //指定宝箱类型
         double gift = Math.random();
         if (gift >= 0 && gift <= 0.05)
             bird.setGift(1);//增加子弹
@@ -187,9 +270,9 @@ public class GameScreen implements Screen {
 
     }
 
-    /*
-    游戏逻辑处理函数
-    通过轮询调用此函数来更新图像，处理输入事件
+    /**
+     * 游戏逻辑处理函数
+     * 通过轮询调用此函数来更新图像，处理输入事件
      */
     @Override
     public void render(float delta) {
@@ -278,7 +361,7 @@ public class GameScreen implements Screen {
             }
         }
 
-        //防止鼠标越界
+        //防止鼠标越界（1280，800）
         if (shot.x < 0) {
             shot.x = 0;
         }
@@ -378,9 +461,13 @@ public class GameScreen implements Screen {
             }
         }
 
+        //当子弹数量为0
+        //设置为开始画面
         if (bulletSum <= 0 && existBullet <= 0)
             game.setScreen(new StartScreen(game, score));
 
+        //当鸟的数量为0
+        //设置当前画面为开始画面
         if (birdSum <= 0){
             boolean f = true;
             for (Bird bird : birds){
@@ -394,12 +481,14 @@ public class GameScreen implements Screen {
         }
     }
 
-    //换弹逻辑
+    /**
+     * 换弹逻辑函数
+     * 利用Timer安排一个延迟exchangeTime之后再执行的任务
+     * 这里是延迟一段时间后将换弹完成flag置为true
+     */
     private void isExchange() {
         if (existBullet <= 0){
             try {
-                //利用Timer安排一个延迟exchangeTime之后再执行的任务
-                //这里是延迟一段时间后将换弹完成flag置为true
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -433,7 +522,9 @@ public class GameScreen implements Screen {
 
     }
 
-    //内存回收
+    /**
+     * 内存回收函数
+     */
     @Override
     public void dispose() {
         for (Texture texture : birdImages)

@@ -4,8 +4,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 
 /**
- * @Author: Liu
- * @Date: 2018/6/9 15:43
+ * @author : Liu BCY WY STX
+ * @date : 2018/6/9 15:43
  */
 public class MyInputProcessor implements InputProcessor {
     /**
